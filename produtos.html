@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Consulta de Produtos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+  <div class="container mt-5">
+    <h1 class="text-center mb-4 text-success">Consulta de Produtos</h1>
+
+    <div class="mb-3">
+      <input type="text" id="novoProduto" class="form-control" placeholder="Digite o nome do produto">
+    </div>
+    <div class="mb-3 d-flex gap-2">
+      <button class="btn btn-success" onclick="iniciarAcao('incluir')">Incluir Produto</button>
+      <button class="btn btn-secondary" onclick="iniciarAcao('editar')">Editar Produto</button>
+      <button class="btn btn-danger" onclick="iniciarAcao('excluir')">Excluir Produto</button>
+    </div>
+
+    <ul class="list-group" id="listaProdutos"></ul>
+
+    <div class="mt-3 d-flex justify-content-between">
+      <a href="TelaDeInicio.html" class="btn btn-outline-dark">Voltar ao Painel Principal</a>
+      <button id="btnSair" class="btn btn-outline-danger">Encerrar Sessão</button>
+    </div>
+  </div>
+
+  <script>
+    let produtos = JSON.parse(localStorage.getItem("produtos")) || [];
+    let selecionado = -1;
+    let acaoPendente = false;
+
+    function atualizarLista() {
+      const lista = document.getElementById("listaProdutos");
+      lista.innerHTML = "";
+      produtos.forEach((p, i) => {
+        const li = document.createElement("li");
+        li.textContent = p;
+        li.className = "list-group-item" + (i === selecionado ? " active" : "");
+        li.onclick = () => {
+          selecionado = i;
+          atualizarLista();
+        };
+        lista.appendChild(li);
+      });
+    }
+
+    function atualizarBotaoSair() {
+      document.getElementById("btnSair").disabled = acaoPendente;
+    }
+
+    function iniciarAcao(tipo) {
+      acaoPendente = true;
+      atualizarBotaoSair();
+
+      if (tipo === "incluir") {
+        const valor = document.getElementById("novoProduto").value.trim();
+        if (valor) {
+          produtos.push(valor);
+          localStorage.setItem("produtos", JSON.stringify(produtos));
+          document.getElementById("novoProduto").value = "";
+          concluirAcao();
+        } else {
+          alert("Digite um nome válido!");
+          concluirAcao();
+        }
+      } 
+      else if (tipo === "editar") {
+        if (selecionado >= 0) {
+          const novoNome = prompt("Novo nome do produto:", produtos[selecionado]);
+          if (novoNome) {
+            produtos[selecionado] = novoNome;
+            localStorage.setItem("produtos", JSON.stringify(produtos));
+          }
+        } else {
+          alert("Selecione um produto na lista para editar!");
+        }
+        concluirAcao();
+      } 
+      else if (tipo === "excluir") {
+        if (selecionado >= 0) {
+          if (confirm("Tem certeza que deseja excluir?")) {
+            produtos.splice(selecionado, 1);
+            localStorage.setItem("produtos", JSON.stringify(produtos));
+            selecionado = -1;
+          }
+        } else {
+          alert("Selecione um produto na lista para excluir!");
+        }
+        concluirAcao();
+      }
+
+      atualizarLista();
+    }
+
+    function concluirAcao() {
+      acaoPendente = false;
+      atualizarBotaoSair();
+    }
+
+    document.getElementById("btnSair").addEventListener("click", function() {
+      if (!acaoPendente) {
+        window.location.href = "Index.html";
+      } else {
+        alert("Conclua ou cancele a ação antes de sair!");
+      }
+    });
+
+    atualizarLista();
+    atualizarBotaoSair();
+  </script>
+
+</body>
+</html>
